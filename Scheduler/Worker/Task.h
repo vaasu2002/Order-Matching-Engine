@@ -1,5 +1,6 @@
 //
 // Created by Vaasu Bisht on 19/10/25.
+// File contains: CancelToken, Task
 //
 
 #pragma once
@@ -8,6 +9,8 @@
 #define TASK_H
 #include <cstdint>
 #include <functional>
+
+// <================================ Cancel Token ================================>
 
 struct CancelToken
 {
@@ -25,6 +28,10 @@ struct CancelToken
         }
     }
 };
+
+
+// <================================ Task ================================>
+
 
 using TaskFn = std::function<void(const CancelToken&)>;
 
