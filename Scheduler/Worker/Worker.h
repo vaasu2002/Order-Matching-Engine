@@ -22,6 +22,10 @@ struct Task;
  *
  * Each worker has its own task queue and continuously processes tasks until explicitly
  * stopped. SSynchronization is managed via mutex and conditional variables.
+ *
+ * @details
+ * `threadMutex` protects ownership changes of the std::thread object (start/join/move/destruction).
+ * Without this, there can be data races — e.g., one thread calling start() while another calls join().
  */
 struct Worker {
  using TokenMap = std::unordered_map<uint64_t, std::shared_ptr<std::atomic<bool>>>;
@@ -63,6 +67,32 @@ struct Worker {
      * reads from it. So queue is used by multiple thread that's why there is need of mQueueMutex.
      */
     void run();
+
+ /**
+  * @brief  Add new work (task) for the worker thread
+  *
+  * Locks the worker's task queue, add a Task object, and then releases the lock and wakes up the
+  * sleeping thread(worker). The worker thread wakes up, pop the new task and runs it.
+  * @param t
+  */
+ void postTask(const Task& t);
+
+ /**
+  * @brief Signals the worker to exit gracefully.
+  *
+  * Request that the worker thread finishes all pending work and then terminates clearly.
+  */
+ void postStop();
+
+ /**
+  * @brief
+  * To optimize it's better to release the lock before actually calling .join() as std::thread::join()
+  * is a blocking call — it can take a long time (the worker might still be finishing its run loop). Holding
+  * a mutex while doing a blocking operation — that would block other threads (e.g. start(), shutdown())
+  * from making progress. After std::move, this->thread becomes empty (non-joinable). The lock is then released.
+  * Other code can now safely call start() or inspect state without deadlock risk.
+  */
+ void join() noexcept;
 };
 
 
