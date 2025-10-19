@@ -8,7 +8,7 @@
 
 void Scheduler::createWorker(const std::string& id)
 {
-    std::lock_guard<std::mutex> lk(mLock);
+    std::unique_lock wlk(mLock);
 
     // Check if worker with id already exists.
     if(mWorkers.contains(id))
@@ -21,7 +21,7 @@ void Scheduler::createWorker(const std::string& id)
 void Scheduler::createWorkers(const std::string& prefix, const size_t cnt)
 {
     {
-        std::lock_guard<std::mutex> lock(mLock);
+        std::shared_lock<std::shared_mutex> rlk(mLock);
         if(mWorkers.size())
         {
             mWorkers.clear();
@@ -35,10 +35,22 @@ void Scheduler::createWorkers(const std::string& prefix, const size_t cnt)
 
 void Scheduler::start()
 {
-    std::lock_guard<std::mutex> lock(mLock);
+    std::unique_lock wlk(mLock);
     for (auto& [_, worker] : mWorkers)
     {
         worker->start();
     }
 }
+
+
+Task Scheduler::makeTask(const TaskFn& fn, const std::string& desc)
+{
+    Task t;
+    t.id = nextTaskId();
+    t.func = fn;
+    t.token = CancelToken();
+    t.desc = desc;
+    return t;
+}
+
 
