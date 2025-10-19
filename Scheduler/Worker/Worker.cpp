@@ -62,3 +62,39 @@ void Worker::run()
     }
 }
 
+
+void Worker::postTask(const Task& t)
+{
+    {
+        std::lock_guard<std::mutex> lock(mQueueMutex);
+        mQueue.push((t));
+        mPendingTasks.insert((t.id));
+    }
+    mCv.notify_one();
+}
+
+void Worker::postStop()
+{
+    {
+        std::lock_guard<std::mutex> lock(mQueueMutex);
+        mStop = true;
+    }
+    mCv.notify_one();
+}
+
+void Worker::join() noexcept
+{
+    std::thread local;
+    {
+        std::lock_guard<std::mutex> lk(mThreadMutex);
+        if(!mThread.joinable())
+        {
+            return;
+        }
+        local = std::move(mThread);
+    }
+    if(local.joinable())
+    {
+        local.join();
+    }
+}
