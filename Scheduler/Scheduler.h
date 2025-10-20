@@ -9,8 +9,9 @@
 
 #include <map>
 #include <shared_mutex>
-
+#include <future>
 #include "Worker/Task.h"
+#include "Worker/Worker.h"
 
 struct Worker;
 class Order;
@@ -83,7 +84,14 @@ public:
   */
  void createWorkers(const std::string& prefix, size_t cnt);
 
-
+ /**
+  * @brief Submits a fire-and-forget task to a worker
+  * @param wId Unique identified of workers
+  * @param func Callable which the task will call
+  * @param desc
+  * @return Task Id
+  */
+ uint64_t submitTo(const std::string& wId, const TaskFn& func, const std::string& desc = "");
 
  /**
   * Helper method to create a task.
@@ -108,6 +116,28 @@ public:
    }
    return it->second.get();
   }
+
+ /**
+  *
+  * @tparam F The callable type (lambda, function, or functor).
+  * @tparam Args The types of arguments to pass to the callable.
+  * @param wid The identifier of the worker thread that should run the task
+  * @param f The callable to execute asynchronously.
+  * @param args Arguments to pass to the callable.
+  * @return A future that can be used to retrieve the callable's
+  * return value.
+  */
+ template<typename  F,typename ...Args>
+ auto submitToWithFuture(const std::string& wid, F&& f, Args&&... args)
+ ->std::future<std::invoke_result_t<F,Args...>>;
+
+ /**
+  * @brief Get all active worker's id.
+  */
+ std::vector<std::string> workerIds() const;
+
+ bool hasWorker(const std::string& id) const;
+
 };
 
 
