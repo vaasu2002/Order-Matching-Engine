@@ -125,6 +125,15 @@ public:
     Price price()       const noexcept { return mPrice; }
     Price stopPrice()   const noexcept { return mStopPrice; }
 
+    void updateOpenQty(const Quantity& qty)
+    {
+        mOpenQty = qty;
+    }
+
+    void updateStatus(const Status& status)
+    {
+        mStatus = status;
+    }
 private:
 
     static std::shared_ptr<const IValidator>& DefaultValidatorPtr()
@@ -192,5 +201,8 @@ private:
     Price mPrice;     // For LIMIT or STOP_LIMIT
     Price mStopPrice; // For STOP or STOP_LIMIT
 };
+
+using OrderRawPtr = Order*;
+using OrderPtr = std::unique_ptr<Order>;
 
 #endif // ORDER_H
