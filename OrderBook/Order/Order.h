@@ -35,7 +35,7 @@ public:
 
     // ============================ Static factories ===========================
 
-    static Order MakeLimit(const OrderId id,
+    static std::unique_ptr<Order> MakeLimit(const OrderId id,
                            const Side side,
                            const Quantity qty,
                            Symbol symbol,
@@ -46,7 +46,7 @@ public:
                                Type::LIMIT, limitPrice, Price{0}, validator);
     }
 
-    static Order MakeMarket(const OrderId id,
+    static std::unique_ptr<Order> MakeMarket(const OrderId id,
                             const Side side,
                             const Quantity qty,
                             Symbol symbol,
@@ -56,7 +56,7 @@ public:
                                Type::MARKET, Price{0}, Price{0}, validator);
     }
 
-    static Order MakeStop(const OrderId id,
+    static std::unique_ptr<Order> MakeStop(const OrderId id,
                           const Side side,
                           const Quantity qty,
                           Symbol symbol,
@@ -67,7 +67,7 @@ public:
                                Type::STOP, Price{0}, stopPrice, validator);
     }
 
-    static Order MakeStopLimit(const OrderId id,
+    static std::unique_ptr<Order> MakeStopLimit(const OrderId id,
                                const Side side,
                                const Quantity qty,
                                Symbol symbol,
@@ -79,7 +79,7 @@ public:
                                Type::STOP_LIMIT, limitPrice, stopPrice, validator);
     }
 
-    static Order MakeLimit(const OrderId id,
+    static std::unique_ptr<Order> MakeLimit(const OrderId id,
                            const Side side,
                            const Quantity qty,
                            Symbol symbol,
@@ -88,7 +88,7 @@ public:
         return MakeLimit(id, side, qty, std::move(symbol), limitPrice, DefaultValidator());
     }
 
-    static Order MakeMarket(const OrderId id,
+    static std::unique_ptr<Order> MakeMarket(const OrderId id,
                             const Side side,
                             const Quantity qty,
                             Symbol symbol)
@@ -96,7 +96,7 @@ public:
         return MakeMarket(id, side, qty, std::move(symbol), DefaultValidator());
     }
 
-    static Order MakeStop(const OrderId id,
+    static std::unique_ptr<Order> MakeStop(const OrderId id,
                           const Side side,
                           const Quantity qty,
                           Symbol symbol,
@@ -105,7 +105,7 @@ public:
         return MakeStop(id, side, qty, std::move(symbol), stopPrice, DefaultValidator());
     }
 
-    static Order MakeStopLimit(const OrderId id,
+    static std::unique_ptr<Order> MakeStopLimit(const OrderId id,
                                const Side side,
                                const Quantity qty,
                                Symbol symbol,
@@ -135,9 +135,12 @@ private:
     }
 
     /**
-     * @brief Centralized construction to validate and instantiate objects.
+     * @brief Centralized construction to validate and instantiate Order objects.
+     * @remark Object creation happens here.
+     * @remark Since the `Order` constructor is private, `std::make_unique` cannot be used
+     *   to create the `std::unique_ptr`.
      */
-    static Order makeAndValidate(const OrderId id,
+    static std::unique_ptr<Order> makeAndValidate(const OrderId id,
                                  const Side side,
                                  const Quantity qty,
                                  Symbol symbol,
@@ -146,11 +149,19 @@ private:
                                  const Price stopPrice,
                                  const IValidator& validator)
     {
-        Order tmp{id, side, qty, std::move(symbol), type, price, stopPrice};
+        // Cannot use make_unique<Order> as the Order constructor is private.
+        // Making constructor public violates “factory-only creation” design.
+        // So raw pointer is being typecast to unique pointer here.
 
-        if (std::string reason; !validator.validate(tmp, reason))
+        auto tmp = std::unique_ptr<Order>(
+            new Order{id, side, qty, std::move(symbol), type, price, stopPrice});
+
+        if (std::string reason; !validator.validate(*tmp, reason))
         {
-            if (reason.empty()) reason = "Order validation failed";
+            if (reason.empty())
+            {
+                reason = "Order validation failed. Unexpected Error.";
+            }
             throw std::invalid_argument(reason);
         }
         return tmp;

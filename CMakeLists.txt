@@ -12,4 +12,9 @@ add_executable(OrderMatchingEngine
         Scheduler/Scheduler.h
         Scheduler/Scheduler.cpp
         main.cpp
+        OrderBook/Order/Types.h
+        OrderBook/Order/Order.h
+        OrderBook/Order/Validation.h
+        OrderBook/Order/Validation.h
+        OrderBook/Order/Validation.cpp
 )
