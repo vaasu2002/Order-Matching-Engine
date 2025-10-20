@@ -17,4 +17,6 @@ add_executable(OrderMatchingEngine
         OrderBook/Order/Validation.h
         OrderBook/Order/Validation.h
         OrderBook/Order/Validation.cpp
+        OrderBook/PriceLevel/PriceLevel.cpp
+        OrderBook/PriceLevel/PriceLevel.h
 )
