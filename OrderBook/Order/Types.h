@@ -36,7 +36,7 @@ enum Status
     PENDING,
     CANCELLED,
     FULFILLED,
-    PARTIALLY_FULFILLED
+    PARTIALLY_FILLED
 };
 
 #endif //TYPES_H
