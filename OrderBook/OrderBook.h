@@ -5,8 +5,12 @@
 #ifndef ORDERBOOK_H
 #define ORDERBOOK_H
 
+#include <shared_mutex>
 #include <string>
 #include <sstream>
+
+#include "OrderTracker/OrderTracker.h"
+
 
 /**
  * @class OrderBook
@@ -35,12 +39,24 @@
  * 5. Circuit breakers per stock: Trading halts and protections can be applied individually.
  */
 class OrderBook {
+    // Shared pointer as multiple components (workers, registry, and engine) may concurrently access and
+    // share the same order book instance. To ensure safe, reference-counted lifetime management decision to use
+    // shared pointer was reached.
+    using OrderBookPtr = std::shared_ptr<OrderBook>;
     /**
      * @struct Stats
      * @brief Structure for tracking statistics of order book.
      */
     struct Stats
     {
+        // <===== Market States =====>
+
+        uint64_t marketPrice{0}; /// < Current market price
+        uint64_t lastTradePrice{0}; /// < Price at which last trade was executed.
+        uint64_t lastTradQty{0}; /// < Number of shares that were traded at the last trade.
+
+        // <===== Order Book States =====>
+
         uint64_t totalOrdersCancelled{0};
         uint64_t totalOrdersAdded{0};
         uint64_t totalOrdersFulfilled{0};
@@ -68,15 +84,113 @@ class OrderBook {
         {
             std::ostringstream oss;
             oss << "Stats { "
-                << "totalOrdersAdded=" << totalOrdersAdded
-                << ", totalOrdersCancelled=" << totalOrdersCancelled
-                << ", totalOrdersFulfilled=" << totalOrdersFulfilled
-                << ", totalVolume=" << totalVolume
-                << ", totalTrades=" << totalTrades
-                << " }";
+            << "marketPrice=" << marketPrice
+            << ", lastTradePrice=" << lastTradePrice
+            << ", lastTradQty=" << lastTradQty
+            << ", totalOrdersAdded=" << totalOrdersAdded
+            << ", totalOrdersCancelled=" << totalOrdersCancelled
+            << ", totalOrdersFulfilled=" << totalOrdersFulfilled
+            << ", totalVolume=" << totalVolume
+            << ", totalTrades=" << totalTrades
+            << " }";
             return oss.str();
         }
     };
+
+    /**
+     * @struct Registry
+     * @brief Multiton registry: multiton mapping from Symbol -> weak_ptr<OrderBook>.
+     * The Registry is thread-safe; it holds weak_ptr to avoid cycles and to
+     * allow lazy creation.
+     */
+    struct Registry
+    {
+        std::unordered_map<Symbol, std::weak_ptr<OrderBook>> registry; ///> Stores OrderBook belonging to symbol.
+        mutable std::shared_mutex  mtx; ///> Lock for registry data structure.
+
+        OrderBookPtr createOrderBook(const Symbol& symbol);
+
+        /**
+         *
+         * @brief Get order book if exists.
+         * @return may return nullptr if weak_ptr expired
+         */
+        OrderBookPtr getOrderBook(const Symbol& symbol);
+
+        /**
+         *
+         * @brief Get order book if exists.
+         * @return may return nullptr if weak_ptr expired
+         */
+        OrderBookPtr getOrderBookSafe(const Symbol& symbol);
+
+        /**
+         * @param symbol
+         * @return
+         */
+        OrderBookPtr getOrCreateOrderBook(const Symbol& symbol);
+
+        bool exists(const Symbol& symbol) const;
+        void erase(const Symbol& symbol);
+        void cleanupRegistry();
+        size_t size() const;
+    };
+    using Tracker = OrderTracker;
+
+    Symbol mSymbol;
+    Tracker mBidTracker; ///> Tracking storing BUY side order.
+    Tracker mAskTracker; ///>  Tracking storing SELL side order.
+    Stats mStats;
+
+    static Registry& registry()
+    {
+     static Registry r;
+     return r;
+    }
+
+    /**
+     * @brief Attempts to match an incoming order with orders from the opposite side.
+     * @param order Incoming order being matched.
+     */
+    void matchOrder(OrderRawPtr order);
+
+    /**
+     * @brief Persists the order in the order book. The order is stored in the appropriate
+     * price level tracker depending on its side.
+     * @param order The order to be stored.
+     */
+    void addRestingOrder(OrderPtr order);
+public:
+
+    /** @brief Constructor */
+    explicit OrderBook(Symbol symbol);
+
+    // <============== Registry accessors ==============>
+    /**
+     * @brief Returns the order book corresponding the given symbol. If registry does
+     * not have order book it will create an order book and provide. The logic inside
+     * registry is thread-safe.
+     * @param symbol
+     * @return Order book
+     */
+    static OrderBookPtr getOrCreate(const Symbol& symbol) { return registry().getOrCreateOrderBook(symbol); }
+    static bool contains(const Symbol& symbol) { return registry().exists(symbol); }
+    static void removeFromRegistry(const Symbol& symbol) { return registry().erase(symbol); }
+    static void cleanupRegistry() { return registry().cleanupRegistry(); }
+    static size_t registrySize() { return registry().size(); }
+
+   /**
+     * @brief Process an incoming order: attempt matching, execute trades, and
+     * persist any remaining resting quantity if applicable.
+     *
+     * Matching logic:
+     * 1. Try to match the order against the best-priced orders on the opposite side.
+     * 2. If the order is partially filled, handle remaining quantity based on order type.
+     * 3. If unfulfilled (e.g., limit order not fully filled), persist it as a resting order.
+     * @remarks The caller must be the worker owning this OrderBook.
+     * @param order Incoming order which is looking to be matched.
+     */
+    void processOrder(OrderPtr order)
 };
 
 
