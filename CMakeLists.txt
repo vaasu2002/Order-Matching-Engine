@@ -21,4 +21,6 @@ add_executable(OrderMatchingEngine
         OrderBook/PriceLevel/PriceLevel.h
         OrderBook/OrderTracker/OrderTracker.cpp
         OrderBook/OrderTracker/OrderTracker.h
+        OrderBook/OrderBook.cpp
+        OrderBook/OrderBook.h
 )
