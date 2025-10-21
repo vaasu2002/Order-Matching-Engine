@@ -1,7 +1,6 @@
 #include "Scheduler/Scheduler.h"
-#include "OrderBook/Order/Order.h"
+#include "OrderBook/PriceLevel/PriceLevel.h"
 
-#include <iostream>
 int main()
 {
     // Constructing validation chain
@@ -13,8 +12,11 @@ int main()
     Order::SetDefaultValidator(chain);
 
     // Constructing order objects
-    auto o1 = Order::MakeLimit(1, Side::BUY, Quantity{100}, Symbol{"SAMPLE"}, Price{17500});
-    auto o2 = Order::MakeMarket(2, Side::SELL, Quantity{50}, Symbol{"SAMPLE"});
-    std::cout<<"Working..."<<std::endl;
+    auto o1 = Order::MakeLimit(1, Side::BUY, Quantity{50}, Symbol{"SAMPLE"}, Price{17500});
+
+    auto* priceLevel = new PriceLevel(100);
+    priceLevel->addOrder(std::move(o1));
+    PriceLevel::MatchResult x = priceLevel->matchOrders(99);
+
     return 0;
 }
