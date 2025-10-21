@@ -3,7 +3,7 @@
 //
 
 #include "PriceLevel.h"
-
+#include <iostream>
 
 PriceLevel::PriceLevel(Price price) : mPrice(price), mTotalQuantity(0), mOrderCount(0) {}
 
@@ -53,7 +53,9 @@ PriceLevel::MatchResult PriceLevel::matchOrders(const Quantity maxQty)
     OrderRawPtr currRestingOrder = nullptr;
 
     while (currRestingOrderIt != mOrders.end() && reqQty > 0) {
+
         currRestingOrder = currRestingOrderIt->get();
+
 
         // Shares quantity we have for current order
         Quantity availableQty = currRestingOrder->openQty();
