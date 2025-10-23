@@ -28,6 +28,7 @@ struct Task;
  * Without this, there can be data races — e.g., one thread calling start() while another calls join().
  */
 struct Worker {
+ using Id = std::string;
  using TokenMap = std::unordered_map<uint64_t, std::shared_ptr<std::atomic<bool>>>;
  using UnorderedTaskIdSet = std::unordered_set<uint64_t>;
     std::string mId;

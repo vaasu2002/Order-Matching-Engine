@@ -3,7 +3,7 @@
 //
 
 #include "Worker.h"
-
+#include <iostream>
 Worker::Worker(const std::string& id):mId(std::move(id)), mStop(false){}
 
 void Worker::start()
@@ -58,7 +58,21 @@ void Worker::run()
             mQueue.pop();
             mRunningTasks.insert(t.id);
         }
-
+        try
+        {
+            if(!t.token.isCancelled())
+            {
+                t();
+            }
+            else
+            {
+                // Skipped due to cancel
+            }
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr<<"[Worker]: "<<mId<<" "<<std::endl;
+        }
     }
 }
 
