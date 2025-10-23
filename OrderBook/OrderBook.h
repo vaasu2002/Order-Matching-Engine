@@ -105,7 +105,7 @@ class OrderBook {
      */
     struct Registry
     {
-        std::unordered_map<Symbol, std::weak_ptr<OrderBook>> registry; ///> Stores OrderBook belonging to symbol.
+        std::unordered_map<Symbol, std::shared_ptr<OrderBook>> registry; ///> Stores OrderBook belonging to symbol.
         mutable std::shared_mutex  mtx; ///> Lock for registry data structure.
 
         OrderBookPtr createOrderBook(const Symbol& symbol);
@@ -165,6 +165,12 @@ public:
     /** @brief Constructor */
     explicit OrderBook(Symbol symbol);
 
+    /** @brief Destructor */
+
+    ~OrderBook(){
+      std::cout<<"Order Book destructor called"<<std::endl;
+    }
+
     // <============== Registry accessors ==============>
     /**
      * @brief Returns the order book corresponding the given symbol. If registry does
@@ -173,7 +179,10 @@ public:
      * @param symbol
      * @return Order book
      */
-    static OrderBookPtr getOrCreate(const Symbol& symbol) { return registry().getOrCreateOrderBook(symbol); }
+    static OrderBookPtr getOrCreate(const Symbol& symbol)
+    {
+     return registry().getOrCreateOrderBook(symbol);
+    }
     static bool contains(const Symbol& symbol) { return registry().exists(symbol); }
     static void removeFromRegistry(const Symbol& symbol) { return registry().erase(symbol); }
     static void cleanupRegistry() { return registry().cleanupRegistry(); }
@@ -190,7 +199,7 @@ public:
      * @remarks The caller must be the worker owning this OrderBook.
      * @param order Incoming order which is looking to be matched.
      */
-    void processOrder(OrderPtr order)
+    void processOrder(OrderPtr order);
 };
 
 

@@ -4,7 +4,7 @@
 
 #include "OrderBook.h"
 
-#include <utility>
+#include <iostream>
 
 OrderBook::OrderBook(Symbol symbol):
 mSymbol(std::move(symbol)),
@@ -16,8 +16,8 @@ mAskTracker(Side::SELL){}
 void OrderBook::matchOrder(OrderRawPtr order)
 {
     // simulating order matching and updating of current order
-    order->updateStatus(Status::FULFILLED);
-    order->updateOpenQty(order->openQty()-1);
+    // order->updateStatus(Status::FULFILLED);
+    // order->updateOpenQty(order->openQty()-1);
 }
 void OrderBook::addRestingOrder(OrderPtr order)
 {
@@ -32,6 +32,7 @@ void OrderBook::addRestingOrder(OrderPtr order)
 void OrderBook::processOrder(OrderPtr order)
 {
     // Order is tried to match and then order is
+    mStats.totalOrdersAdded++;
     matchOrder(order.get());
     if(order->status() == Status::FULFILLED)
     {
