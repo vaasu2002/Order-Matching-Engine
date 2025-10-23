@@ -24,4 +24,6 @@ add_executable(OrderMatchingEngine
         OrderBook/OrderBook.cpp
         OrderBook/OrderBook.h
         OrderBook/OrderBook_Registry.cpp
+        Scheduler/OrderBookScheduler.cpp
+        Scheduler/OrderBookScheduler.h
 )
