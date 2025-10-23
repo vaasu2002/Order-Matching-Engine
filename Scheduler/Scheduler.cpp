@@ -5,6 +5,10 @@
 #include "Scheduler.h"
 
 #include "Worker/Worker.h"
+#include <iostream>
+
+Scheduler::~Scheduler() = default;
+
 
 void Scheduler::createWorker(const std::string& id)
 {
@@ -29,6 +33,7 @@ void Scheduler::createWorkers(const std::string& prefix, const size_t cnt)
     }
     for(size_t i = 0 ; i < cnt ; i++)
     {
+        std::cout<<prefix+"_"+std::to_string(i)<<std::endl;
         createWorker(prefix+"_"+std::to_string(i));
     }
 }
@@ -66,7 +71,7 @@ void Scheduler::shutdown()
 
 uint64_t Scheduler::submitTo(const std::string& wId, const TaskFn& func, const std::string& desc)
 {
-    auto t = makeTask(func,desc);
+    const auto t = makeTask(func,desc);
     auto* w = getWorker(wId);
     w->postTask(t);
     return t.id;

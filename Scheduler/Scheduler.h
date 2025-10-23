@@ -109,7 +109,7 @@ public:
  Worker* getWorker(const std::string& id)
  {
   std::shared_lock<std::shared_mutex> rlk(mLock); // read only lock
-  const auto it = mWorkers.end();
+  const auto it = mWorkers.find(id);
    if(it==mWorkers.end())
    {
     throw std::runtime_error("Worker not found: " + id);
