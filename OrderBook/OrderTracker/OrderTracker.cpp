@@ -45,7 +45,6 @@ void OrderTracker::addOrder(OrderPtr order)
 
     const OrderId id = order->id();
     const Price price = order->price();
-
     if(mOrderLocationMap.contains(id))
     {
         // Order already exists
