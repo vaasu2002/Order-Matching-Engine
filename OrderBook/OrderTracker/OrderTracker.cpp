@@ -4,6 +4,9 @@
 
 #include "OrderTracker.h"
 
+#include <iostream>
+#include <valarray>
+
 OrderTracker::OrderTracker(const Side side):mSide(side)
 {
     mOrderLocationMap.clear();
@@ -53,6 +56,27 @@ void OrderTracker::addOrder(OrderPtr order)
 
     const PriceLevelPtr priceLevel = getOrCreatePriceLevel(price);
     auto orderIt = priceLevel->addOrder(std::move(order));
+    std::cout<<"isEmpty() price level: "<<priceLevel->isEmpty()<<std::endl;
+    std::cout<<"Order Side(BUY): "<<(mSide == Side::BUY)<<std::endl;
     mOrderLocationMap[id] = std::make_pair(price, orderIt);
 }
 
+void OrderTracker::matchOrder(Quantity& qty, Price min, Price max)
+{
+    auto it = mPriceLevelMap.begin();
+
+    while(it != mPriceLevelMap.end() && qty>0 )
+    {
+        const auto& pl = it->second;
+        const Price price = it->first;
+        if (!pl || pl->isEmpty() || price>=max || price<=min){
+            // Price level is empty, cannot do matching.
+            return;
+        }
+
+        // todo: handle trades.
+        auto [remaining, trades] = pl->matchOrders(qty);
+        qty = remaining;
+        it++;
+    }
+}

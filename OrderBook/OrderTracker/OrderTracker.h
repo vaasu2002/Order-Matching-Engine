@@ -32,7 +32,7 @@ struct PriceComparator
 class OrderTracker {
  using PriceLevelPtr = std::shared_ptr<PriceLevel>;
  using PriceLevelMap = std::map<Price, PriceLevelPtr, PriceComparator>;
- using OrderLocationMap =std::map<OrderId, std::pair<Price, typename PriceLevel::OrderIterator>>;
+ using OrderLocationMap = std::map<OrderId, std::pair<Price, typename PriceLevel::OrderIterator>>;
 
  Side mSide;
  OrderLocationMap mOrderLocationMap;
@@ -76,6 +76,18 @@ public:
   * @param order
   */
  void addOrder(OrderPtr order);
+
+ /**
+  * @brief Executes trades by matching an incoming order against the best-priced
+  * resting orders.
+  *
+  * Consumes liquidity from the best-priced level on the opposite side of the book,
+  * up to the specified quantity.
+  * @param qty The remaining quantity of the incoming order to be filled.
+  * @param min The minimum price at which BUY/SELL is allowed.
+  * @param max The maximum price at which BUY/SELL is allowed.
+  */
+ void matchOrder(Quantity& qty, Price min, Price max);
 };
 
 
