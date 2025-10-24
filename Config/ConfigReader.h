@@ -18,12 +18,6 @@
  * @brief Dedicated class to read and parse application configuration from an XML file.
  */
 class ConfigReader {
- // Configuration structure for the application
- struct Config
- {
-  std::string obWorkerPrefix;
-  size_t obWorkerCnt;
- };
 
  /**
   * @brief Helper function to get a required element's text from a parent XML element.
@@ -42,6 +36,12 @@ class ConfigReader {
  static size_t GetRequiredElementSizeT(const tinyxml2::XMLElement* parent, const char* childName);
 
 public:
+ // Configuration structure for the application
+ struct Config
+ {
+  std::string obWorkerPrefix;
+  size_t obWorkerCnt;
+ };
  static Config LoadConfig(const std::string& path);
 };
 
