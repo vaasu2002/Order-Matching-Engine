@@ -8,7 +8,7 @@
 #include <shared_mutex>
 #include <string>
 #include <sstream>
-
+#include <iostream>
 #include "OrderTracker/OrderTracker.h"
 
 
@@ -136,10 +136,12 @@ class OrderBook {
         size_t size() const;
     };
     using Tracker = OrderTracker;
+    using TrackerStore = std::map<Side,Tracker>;
 
     Symbol mSymbol;
-    Tracker mBidTracker; ///> Tracking storing BUY side order.
-    Tracker mAskTracker; ///>  Tracking storing SELL side order.
+    // Tracker mBidTracker; ///> Tracking storing BUY side order.
+    // Tracker mAskTracker; ///>  Tracking storing SELL side order.
+    TrackerStore mTrackerStore; ///> Stores order tracker for different side (BUY and SELL)
     Stats mStats;
 
     static Registry& registry()
