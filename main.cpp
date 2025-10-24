@@ -1,4 +1,20 @@
-#include "Scheduler/OrderBookScheduler.h"
+#include <csignal>
+#include "Application.h"
+#include "Config/ConfigReader.h"
+
+std::unique_ptr<Application> g_app;
+
+void signalHandler(const int signum)
+{
+    std::cout << "\nInterrupt signal (" << signum << ") received. Shutting down application..." << std::endl;
+    if (g_app)
+    {
+        g_app->shutdown();
+    }
+    // Exit the program
+    exit(signum);
+}
+
 int main()
 {
     // Constructing validation chain
@@ -9,26 +25,57 @@ int main()
     // Setting default configuration
     Order::SetDefaultValidator(chain);
 
-    // Constructing order objects
-    auto o1 = Order::MakeLimit(1, Side::BUY, Quantity{50}, Symbol{"TESLA"}, Price{17500});
-    auto o2 = Order::MakeLimit(2, Side::BUY, Quantity{50}, Symbol{"TESLA"}, Price{17500});
-    auto mp = std::unordered_map<Symbol,std::string>();
-    mp["TESLA"]  = "worker_0";
-    mp["APPLE"]  = "worker_1";
+    // Register signal handler for graceful shutdown
+    std::signal(SIGINT, signalHandler);
+    std::signal(SIGTERM, signalHandler);
 
-    OrderBookScheduler bookScheduler("worker",3,mp);
+    // Initialize Application Configuration
+    ConfigReader::Config config;
+    try
+    {
+        config = ConfigReader::LoadConfig("../config.xml");
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Error loading configuration: " << e.what() << std::endl;
+        return 1;
+    }
 
-    bookScheduler.start();
-    bookScheduler.processOrder(std::move(o1));
-    // for(int i=0;i<10000000000;i++){}
-    bookScheduler.processOrder(std::move(o2));
-    int x;
-    std::cin>>x;
+    // Instantiate the Application
+    g_app = std::make_unique<Application>(config);
 
-    // auto* priceLevel = new PriceLevel(100);
-    // priceLevel->addOrder(std::move(o1));
-    // PriceLevel::MatchResult x = priceLevel->matchOrders(99);
+    // Start the Application
+    try
+    {
+        g_app->start();
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Application failed to start: " << e.what() << std::endl;
+        return 1;
+    }
 
+    // Run the simulation
+    g_app->simulate();
+
+
+    // The application will now block in the run() method or wait for a signal.
+    // Since run() is a skeleton, we'll wait for user input to simulate an ongoing process.
+    std::cout << "Type 'q' and press Enter to manually stop the application." << std::endl;
+    std::string input;
+    while (std::cin >> input)
+    {
+        if (input == "q" || input == "quit")
+        {
+            break;
+        }
+    }
+
+    // Manual shutdown if the loop is exited normally
+    if (g_app)
+    {
+        g_app->shutdown();
+    }
 
     return 0;
 }
