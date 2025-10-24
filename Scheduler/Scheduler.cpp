@@ -7,7 +7,10 @@
 #include "Worker/Worker.h"
 #include <iostream>
 
-Scheduler::~Scheduler() = default;
+Scheduler::~Scheduler()
+{
+    shutdown();
+}
 
 
 void Scheduler::createWorker(const std::string& id)
