@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <OrderBookScheduler>
+        <WorkerPrefix>OB_Worker</WorkerPrefix>
+        <WorkerCount>5</WorkerCount>
+    </OrderBookScheduler>
+</Configuration>
