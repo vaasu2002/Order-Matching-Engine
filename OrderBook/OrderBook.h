@@ -151,6 +151,11 @@ class OrderBook {
     }
 
     /**
+     * @brief Fetch order book of given side.
+     */
+    Tracker& getOrderTracker(Side side);
+
+    /**
      * @brief Attempts to match an incoming order with orders from the opposite side.
      * @param order Incoming order being matched.
      */
@@ -162,6 +167,19 @@ class OrderBook {
      * @param order The order to be stored.
      */
     void addRestingOrder(OrderPtr order);
+
+    /**
+     * @brief Updates an order's state and determines its next action post-match.
+     *
+     * @details
+     * Sets the order's status based on its remaining `openQty`. If the order is a
+     * LIMIT order and is not fully filled, this function will add the remaining
+     * quantity to the order book as a new resting order.
+     *
+     * @pre It must be called after the matching has been attempted.
+     * @todo Implement client notifications for fills or status changes.
+     */
+    static void updateOrder(Order& order,Quantity remainingQty);
 public:
 
     /** @brief Constructor */

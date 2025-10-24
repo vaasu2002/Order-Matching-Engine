@@ -14,17 +14,15 @@ mSymbol(std::move(symbol))
     mTrackerStore.insert({Side::SELL,Tracker(Side::SELL)});
 }
 
-
 // todo: separate MARKET and LIMIT orders.
 // current logic only has LIMIT order.
 void OrderBook::matchOrder(const OrderRawPtr order)
 {
     Price maxPrice,minPrice;
     Quantity& openQty = order->openQty();
-    const Side oppSide = (order->side() == Side::BUY) ? Side::SELL : Side::BUY;
 
-    // OrderTracker of opposite side
-    const auto& it = mTrackerStore.find(oppSide);
+    // Fetch order tracker of opposite side
+    auto tracker = getOrderTracker(order->oppositeSide()); // opposite side's order tracker
 
     // Attempt the match order with resting orders of opposite side.
     if(order->side() == Side::SELL)
@@ -37,14 +35,20 @@ void OrderBook::matchOrder(const OrderRawPtr order)
         maxPrice = order->price();
         minPrice = 0;
     }
-    it->second.matchOrder(openQty,minPrice,maxPrice);
-    order->updateOpenQty(openQty);
+    tracker.matchOrder(openQty,minPrice,maxPrice);
+    updateOrder(*order,openQty);
 }
+
+OrderBook::Tracker& OrderBook::getOrderTracker(const Side side)
+{
+    const auto& it = mTrackerStore.find(side);
+    return it->second;
+}
+
 void OrderBook::addRestingOrder(OrderPtr order)
 {
-    // auto tracker = mTrackerStore[order->side()];
-    const auto& it = mTrackerStore.find(order->side());
-    it->second.addOrder(std::move(order));
+    auto tracker = getOrderTracker(order->side());
+    tracker.addOrder(std::move(order));
 }
 
 void OrderBook::processOrder(OrderPtr order)
@@ -55,14 +59,41 @@ void OrderBook::processOrder(OrderPtr order)
 
     matchOrder(order.get());
 
-    if(order->status() == Status::FULFILLED)
+    if(order->status() != Status::FULFILLED && order->type() == Type::LIMIT)
     {
-        return;
-    }
-    if(order->type() == LIMIT)
-    {
-        std::cout<<"adding resting order"<<std::endl;
+        // Unfulfilled(pending / partially fulfilled) ordered are added in order book.
         addRestingOrder(std::move(order));
     }
 }
 
+void OrderBook::updateOrder(Order& order, const Quantity remainingQty)
+{
+    const Quantity currentQty = order.openQty();
+
+    // If quantity is unchanged, no trade occurred.
+    if(currentQty == remainingQty)
+    {
+        // For a Market order, no match means it should be cancelled.
+        if(order.type() == Type::MARKET)
+        {
+            order.updateStatus(Status::CANCELLED);
+        }
+        return;
+    }
+    if (remainingQty > currentQty)
+    {
+        throw std::logic_error("Invalid order quantity update.");
+    }
+
+    // --- Main Logic: A Match Occurred ---
+    // We now know: 0 <= remainingQty < currentQty
+
+    // Update the quantity
+    order.updateOpenQty(remainingQty);
+
+    // Update the status
+    const Status newStatus = (remainingQty == 0)
+                                 ? Status::FULFILLED
+                                 : Status::PARTIALLY_FILLED;
+    order.updateStatus(newStatus);
+}
