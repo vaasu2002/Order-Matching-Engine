@@ -118,7 +118,8 @@ public:
     OrderId id()        const noexcept { return mId; }
     Side side()         const noexcept { return mSide; }
     Quantity qty()      const noexcept { return mQty; }
-    Quantity openQty()  const noexcept { return mOpenQty; }
+    Quantity openQty() const noexcept { return mOpenQty; }
+    Quantity& openQty() noexcept { return mOpenQty; }
     const Symbol& symbol() const noexcept { return mSymbol; }
     Status status()     const noexcept { return mStatus; }
     Type type()         const noexcept { return mType; }
