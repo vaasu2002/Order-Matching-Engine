@@ -38,3 +38,4 @@ add_executable(OrderMatchingEngine
 find_package(TinyXML2 REQUIRED CONFIG)
 target_include_directories(OrderMatchingEngine PRIVATE /opt/homebrew/opt/tinyxml2/include)
 target_link_libraries(OrderMatchingEngine PRIVATE /opt/homebrew/opt/tinyxml2/lib/libtinyxml2.dylib)
+target_link_libraries(OrderMatchingEngine PRIVATE ${TinyXML2_LIB_TARGET})
