@@ -117,6 +117,7 @@ public:
 
     OrderId id()        const noexcept { return mId; }
     Side side()         const noexcept { return mSide; }
+    Side oppositeSide() const noexcept { return (mSide == Side::BUY) ? Side::SELL : Side::BUY; }
     Quantity qty()      const noexcept { return mQty; }
     Quantity openQty() const noexcept { return mOpenQty; }
     Quantity& openQty() noexcept { return mOpenQty; }
