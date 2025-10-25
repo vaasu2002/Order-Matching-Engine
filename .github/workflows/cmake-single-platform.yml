@@ -1,0 +1,71 @@
+name: CMake (macOS only)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  BUILD_TYPE: Release
+  BUILD_DIR: ${{ github.workspace }}/build
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Ensure Homebrew is available
+        shell: bash
+        run: |
+          if ! command -v brew >/dev/null 2>&1; then
+            echo "Homebrew not found: installing Homebrew (may already exist on GitHub macOS runners)"
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            # ensure brew is in PATH for M1 / intel runner environments
+            eval "$(/opt/homebrew/bin/brew shellenv)" || true
+            eval "$(/usr/local/bin/brew shellenv)" || true
+          fi
+          brew update
+      - name: Install build dependencies (cmake, ninja, tinyxml2)
+        shell: bash
+        run: |
+          # Install packages if missing. brew install exits non-zero if already present but '|| true' silences minor issues.
+          brew list cmake >/dev/null 2>&1 || brew install cmake
+          brew list ninja >/dev/null 2>&1 || brew install ninja
+          brew list tinyxml2 >/dev/null 2>&1 || brew install tinyxml2
+      - name: Set build-output-dir
+        id: strings
+        shell: bash
+        run: |
+          echo "build-output-dir=${{ env.BUILD_DIR }}" >> "$GITHUB_OUTPUT"
+      - name: Configure CMake (Ninja)
+        shell: bash
+        run: |
+          BUILD_DIR="${{ steps.strings.outputs.build-output-dir }}"
+          mkdir -p "$BUILD_DIR"
+          echo "Configuring in $BUILD_DIR"
+          # use the system clang/clang++
+          cmake -B "$BUILD_DIR" -S "${{ github.workspace }}" \
+            -G "Ninja" \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++
+      - name: Build
+        shell: bash
+        run: |
+          BUILD_DIR="${{ steps.strings.outputs.build-output-dir }}"
+          echo "Building ${BUILD_DIR} on macOS"
+          # detect CPU cores on macOS
+          JOBS="$(sysctl -n hw.ncpu 2>/dev/null || echo 2)"
+          # fallback sanity
+          if ! [[ "$JOBS" =~ ^[0-9]+$ ]]; then JOBS=2; fi
+          echo "Using JOBS=$JOBS"
+          cmake --build "$BUILD_DIR" --config "${{ env.BUILD_TYPE }}" -- -j${JOBS}
+      - name: Test
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        shell: bash
+        run: |
+          echo "Running ctest in $(pwd)"
+          ctest --build-config ${{ env.BUILD_TYPE }} --output-on-failure
