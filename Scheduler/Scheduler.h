@@ -10,6 +10,7 @@
 #include <map>
 #include <shared_mutex>
 #include <future>
+#include <variant>
 #include "Worker/Task.h"
 #include "Worker/Worker.h"
 

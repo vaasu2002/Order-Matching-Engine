@@ -9,6 +9,7 @@
 #define TASK_H
 #include <cstdint>
 #include <functional>
+#include <memory>
 
 // <================================ Cancel Token ================================>
 

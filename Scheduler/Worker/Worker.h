@@ -7,6 +7,7 @@
 #ifndef WORKER_H
 #define WORKER_H
 
+#include<queue>
 #include <thread>
 #include <unordered_set>
 
