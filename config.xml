@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
     <OrderBookScheduler>
-        <WorkerPrefix>OB_Worker</WorkerPrefix>
+        <WorkerPrefix>OBWorker</WorkerPrefix>
         <WorkerCount>5</WorkerCount>
     </OrderBookScheduler>
+    <OrderInjectorScheduler>
+        <WorkerPrefix>OIWorker</WorkerPrefix>
+        <WorkerCount>5</WorkerCount>
+    </OrderInjectorScheduler>
 </Configuration>

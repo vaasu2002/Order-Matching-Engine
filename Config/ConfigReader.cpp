@@ -71,6 +71,15 @@ ConfigReader::Config ConfigReader::LoadConfig(const std::string& path)
     config.obWorkerPrefix = GetRequiredElementText(obsConfig, "WorkerPrefix");
     config.obWorkerCnt = GetRequiredElementSizeT(obsConfig, "WorkerCount");
 
+    // --- OrderInjectorScheduler Configuration ---
+    const XMLElement* oisConfig = root->FirstChildElement("OrderInjectorScheduler");
+    if (!oisConfig)
+    {
+        throw std::runtime_error("Configuration error: Missing required element <OrderInjectorScheduler>.");
+    }
+
+    config.oiWorkerPrefix = GetRequiredElementText(oisConfig, "WorkerPrefix");
+    config.oiWorkerCnt = GetRequiredElementSizeT(oisConfig, "WorkerCount");
 
     return config;
 }

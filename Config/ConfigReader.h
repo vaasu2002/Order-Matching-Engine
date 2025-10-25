@@ -41,6 +41,8 @@ public:
  {
   std::string obWorkerPrefix;
   size_t obWorkerCnt;
+  std::string oiWorkerPrefix;
+  size_t oiWorkerCnt;
  };
  static Config LoadConfig(const std::string& path);
 };
