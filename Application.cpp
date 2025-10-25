@@ -8,11 +8,12 @@ void Application::start()
 {
     // todo: remove this is just a example for testing
     auto mp = std::unordered_map<Symbol,std::string>();
-    mp["TESLA"]  = "OB_Worker_0";
-    mp["APPLE"]  = "OB_Worker_1";
+    mp["TESLA"]  = "OBWorker_0";
+    mp["APPLE"]  = "OBWorker_1";
 
     std::cout<<"prefix: "<<mConfig.obWorkerPrefix<<std::endl;
     std::cout<<"cnt: "<<mConfig.obWorkerCnt<<std::endl;
+
     mOrderBookScheduler = std::make_shared<OrderBookScheduler>(
         mConfig.obWorkerPrefix,
         mConfig.obWorkerCnt,
@@ -21,6 +22,16 @@ void Application::start()
     mOrderBookScheduler->start();
 
     std::cout << "OrderBookScheduler started with " << mConfig.obWorkerCnt << " workers." << std::endl;
+
+    mOrderInjectorScheduler = std::make_shared<OrderInjectorScheduler>(
+        mConfig.oiWorkerPrefix,
+        mConfig.oiWorkerCnt,
+        mOrderBookScheduler
+    );
+    mOrderInjectorScheduler->start();
+
+    std::cout << "mOrderInjectorScheduler started with " << mConfig.oiWorkerCnt << " workers." << std::endl;
+
     std::cout << "Application started successfully." << std::endl;
 }
 
@@ -34,16 +45,27 @@ void Application::shutdown()
         std::cout << "OrderBookScheduler shut down." << std::endl;
         mOrderBookScheduler.reset();
     }
+    if (mOrderInjectorScheduler) {
+        mOrderInjectorScheduler->shutdown();
+        std::cout << "mOrderInjectorScheduler shut down." << std::endl;
+        mOrderInjectorScheduler.reset();
+    }
     std::cout << "Application shut down successfully." << std::endl;
 }
 
 void Application::simulate()
 {
-    auto o1 = Order::MakeLimit(1, Side::BUY, Quantity{150}, Symbol{"TESLA"}, Price{17500});
-    auto o2 = Order::MakeLimit(2, Side::SELL, Quantity{50}, Symbol{"TESLA"}, Price{17400});
+    std::vector<std::string> messages = {
+        "id=1;side=BUY;qty=100;symbol=TESLA;price=17500;type=LIMIT",
+        "id=2;side=SELL;qty=50;symbol=TESLA;price=17400;type=LIMIT",
+        "id=3;side=BUY;qty=30;symbol=TESLA;price=17350;type=LIMIT",
+        "id=4;side=SELL;qty=70;symbol=TESLA;price=17600;type=LIMIT"
+    };
 
-    mOrderBookScheduler->processOrder(std::move(o1));
-    mOrderBookScheduler->processOrder(std::move(o2));
+    for(const auto& msg:messages)
+    {
+        mOrderInjectorScheduler->processIncomingOrder(msg);
+    }
 
     std::cin.get();
 }

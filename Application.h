@@ -8,6 +8,7 @@
 #define APPLICATION_H
 
 #include "Scheduler/OrderBookScheduler.h"
+#include "Scheduler/OrderInjectorScheduler.h"
 #include "Config/ConfigReader.h"
 
 /**
@@ -18,6 +19,7 @@
 class Application {
  ConfigReader::Config mConfig;
  std::shared_ptr<OrderBookScheduler> mOrderBookScheduler;
+ std::shared_ptr<OrderInjectorScheduler> mOrderInjectorScheduler;
 public:
 
  /** @brief Constructor */

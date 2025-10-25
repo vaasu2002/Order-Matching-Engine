@@ -30,6 +30,8 @@ set(SOURCES
         Application.h
         Config/ConfigReader.cpp
         Config/ConfigReader.h
+        Scheduler/OrderInjectorScheduler.cpp
+        Scheduler/OrderInjectorScheduler.h
 )
 
 add_executable(OrderMatchingEngine ${SOURCES})
