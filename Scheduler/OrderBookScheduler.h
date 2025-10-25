@@ -14,6 +14,7 @@
  * @class OrderBookScheduler
  * @extends Scheduler
  */
+
 class OrderBookScheduler final : public Scheduler {
 public:
  using SymbolToWorkerMap = std::unordered_map<Symbol, std::string>;
@@ -55,10 +56,6 @@ public:
  }
 
  void processOrder(OrderPtr order);
-
-
-
-
 };
 
 
