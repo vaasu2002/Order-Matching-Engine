@@ -2,14 +2,14 @@
 #include "Application.h"
 #include "Config/ConfigReader.h"
 
-std::unique_ptr<Application> g_app;
+std::unique_ptr<Application> gApp; // Global instance of application
 
 void signalHandler(const int signum)
 {
     std::cout << "\nInterrupt signal (" << signum << ") received. Shutting down application..." << std::endl;
-    if (g_app)
+    if (gApp)
     {
-        g_app->shutdown();
+        gApp->shutdown();
     }
     // Exit the program
     exit(signum);
@@ -42,12 +42,12 @@ int main()
     }
 
     // Instantiate the Application
-    g_app = std::make_unique<Application>(config);
+    gApp = std::make_unique<Application>(config);
 
     // Start the Application
     try
     {
-        g_app->start();
+        gApp->start();
     }
     catch (const std::exception& e)
     {
@@ -56,7 +56,7 @@ int main()
     }
 
     // Run the simulation
-    g_app->simulate();
+    gApp->simulate();
 
 
     // The application will now block in the run() method or wait for a signal.
@@ -72,9 +72,9 @@ int main()
     }
 
     // Manual shutdown if the loop is exited normally
-    if (g_app)
+    if (gApp)
     {
-        g_app->shutdown();
+        gApp->shutdown();
     }
 
     return 0;

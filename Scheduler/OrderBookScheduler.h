@@ -33,7 +33,6 @@ private:
  {
   std::shared_lock<std::shared_mutex> rlk(mObsLock); // read-only lock
   const auto it = mSymbolToWorkerMap.find(s);
-  std::cout<<s<<std::endl;
   if(it == mSymbolToWorkerMap.end())
   {
    throw std::runtime_error("No worker mapping for "+ s);

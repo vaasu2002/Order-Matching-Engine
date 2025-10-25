@@ -4,20 +4,6 @@
 
 #include "OrderBookScheduler.h"
 
-// void OrderBookScheduler::processOrder(OrderPtr order)
-// {
-//     const Worker::Id wid = getWorker(order->symbol());
-//
-//     submitTo(wid,
-//         [this, ord = std::move(order)](const CancelToken& cTok) mutable
-//         {
-//             const Symbol symbol = ord->symbol();
-//             const auto& ob = OrderBook::getOrCreate(symbol);
-//             ob->processOrder(std::move(ord));
-//         },
-//         "desc");
-// }
-
 void OrderBookScheduler::processOrder(OrderPtr order)
 {
     const Worker::Id wid = getWorker(order->symbol());

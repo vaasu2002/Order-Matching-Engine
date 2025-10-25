@@ -11,9 +11,6 @@ void Application::start()
     mp["TESLA"]  = "OBWorker_0";
     mp["APPLE"]  = "OBWorker_1";
 
-    std::cout<<"prefix: "<<mConfig.obWorkerPrefix<<std::endl;
-    std::cout<<"cnt: "<<mConfig.obWorkerCnt<<std::endl;
-
     mOrderBookScheduler = std::make_shared<OrderBookScheduler>(
         mConfig.obWorkerPrefix,
         mConfig.obWorkerCnt,
@@ -67,5 +64,4 @@ void Application::simulate()
         mOrderInjectorScheduler->processIncomingOrder(msg);
     }
 
-    std::cin.get();
 }

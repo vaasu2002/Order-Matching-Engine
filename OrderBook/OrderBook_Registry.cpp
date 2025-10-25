@@ -7,7 +7,6 @@
 OrderBook::OrderBookPtr OrderBook::Registry::createOrderBook(const Symbol& symbol)
 {
     // Caller must hold unique_lock on mtx. Creates shared_ptr and stores weak_ptr.
-    std::cout<<"FFinally creating the order book"<<std::endl;
     auto sp = std::make_shared<OrderBook>(symbol);
     registry[symbol] = sp; // store weak_ptr implicitly
     return sp;
@@ -35,7 +34,6 @@ OrderBook::OrderBookPtr OrderBook::Registry::getOrCreateOrderBook(const Symbol& 
     if (const auto ob  = getOrderBookSafe(symbol); ob) {
         return ob;
     }
-    std::cout<<"Order book not found in slow path"<<std::endl;
 
     // Slow path: unique (write) lock + recheck
     // Some other thread in meanwhile might have created the order book.
@@ -44,8 +42,6 @@ OrderBook::OrderBookPtr OrderBook::Registry::getOrCreateOrderBook(const Symbol& 
     {
         return ob;
     }
-
-    std::cout<<"Order book not found in created by other thread"<<std::endl;
 
     // create (under write lock)
     return createOrderBook(symbol);

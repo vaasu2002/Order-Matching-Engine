@@ -36,7 +36,6 @@ void Scheduler::createWorkers(const std::string& prefix, const size_t cnt)
     }
     for(size_t i = 0 ; i < cnt ; i++)
     {
-        std::cout<<prefix+"_"+std::to_string(i)<<std::endl;
         createWorker(prefix+"_"+std::to_string(i));
     }
 }

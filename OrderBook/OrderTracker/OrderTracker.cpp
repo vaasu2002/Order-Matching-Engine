@@ -56,8 +56,6 @@ void OrderTracker::addOrder(OrderPtr order)
 
     const PriceLevelPtr priceLevel = getOrCreatePriceLevel(price);
     auto orderIt = priceLevel->addOrder(std::move(order));
-    std::cout<<"isEmpty() price level: "<<priceLevel->isEmpty()<<std::endl;
-    std::cout<<"Order Side(BUY): "<<(mSide == Side::BUY)<<std::endl;
     mOrderLocationMap[id] = std::make_pair(price, orderIt);
 }
 
