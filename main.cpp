@@ -33,7 +33,7 @@ int main()
     ConfigReader::Config config;
     try
     {
-        config = ConfigReader::LoadConfig("../config.xml");
+        config = ConfigReader::LoadConfig("./config.xml");
     }
     catch (const std::exception& e)
     {
