@@ -10,6 +10,7 @@
 #include "Scheduler/OrderBookScheduler.h"
 #include "Scheduler/OrderInjectorScheduler.h"
 #include "Config/ConfigReader.h"
+#include "ThreadAssignmentManager.h"
 
 /**
  * @class Application

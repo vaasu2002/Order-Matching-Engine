@@ -28,6 +28,7 @@ set(SOURCES
         Scheduler/OrderBookScheduler.h
         Application.cpp
         Application.h
+        ThreadAssignmentManager.h
         Config/ConfigReader.cpp
         Config/ConfigReader.h
         Scheduler/OrderInjectorScheduler.cpp
