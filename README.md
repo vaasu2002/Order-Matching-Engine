@@ -7,9 +7,11 @@
 chmod +x scripts/install-deps.sh
 ./scripts/install-deps.sh 
 
-# Build and Run
+# Build
 cmake -S . -B build
 cmake --build build
+
+# Run
 ./build/OrderMatchingEngine 
 ````
 
