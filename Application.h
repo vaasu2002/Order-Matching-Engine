@@ -11,6 +11,7 @@
 #include "Scheduler/OrderInjectorScheduler.h"
 #include "Config/ConfigReader.h"
 #include "ThreadAssignmentManager.h"
+#include "LiveMetricsProducer.h"
 
 /**
  * @class Application
@@ -21,6 +22,8 @@ class Application {
  ConfigReader::Config mConfig;
  std::shared_ptr<OrderBookScheduler> mOrderBookScheduler;
  std::shared_ptr<OrderInjectorScheduler> mOrderInjectorScheduler;
+ std::shared_ptr<ThreadAssignmentManager> mAssignmentManager;
+
 public:
 
  /** @brief Constructor */

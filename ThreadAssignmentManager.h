@@ -14,7 +14,7 @@
 #include <optional>
 #include <memory>
 #include "./OrderBook/Order/Order.h"
-#include "./Scheduler/OrderInjectorScheduler.h"
+#include "./Scheduler/OrderBookScheduler.h"
 
 
 struct MetricSample{
@@ -134,6 +134,8 @@ class ThreadAssignmentManager{
         std::cout<<"Performing rebalance logic......"<<std::endl;
     }
 public:
+
+    ThreadAssignmentManager(std::shared_ptr<OrderBookScheduler> orderBookScheduler):mScheduler(std::move(orderBookScheduler)){}
 
     void start(){
         mStopFlag.store(false);

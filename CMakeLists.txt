@@ -29,6 +29,7 @@ set(SOURCES
         Application.cpp
         Application.h
         ThreadAssignmentManager.h
+        LiveMetricsProducer.h
         Config/ConfigReader.cpp
         Config/ConfigReader.h
         Scheduler/OrderInjectorScheduler.cpp
