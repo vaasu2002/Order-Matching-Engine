@@ -130,7 +130,11 @@ class ThreadAssignmentManager{
     }
 
     // actual transfer logic
+    // will be performed outside of lock
     void performRebalance(const std::vector<std::pair<Symbol,double>> &snapshot){
+        // Algorithm:
+        // 1. Compute total load and filter small ones
+        // 2. Prepare symbols to consider 
         std::cout<<"Performing rebalance logic......"<<std::endl;
     }
 public:
