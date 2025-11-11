@@ -1,6 +1,6 @@
 //
 // Created by Vaasu Bisht on 20/10/25.
-//
+// Updated by Vaasu Bisht on 11/11/25.
 
 #pragma once
 #ifndef TYPES_H
@@ -38,6 +38,15 @@ enum Status
     CANCELLED,
     FULFILLED,
     PARTIALLY_FILLED
+};
+
+enum TIF : uint32_t {
+    DAY = 0,
+    ALL_OR_NONE = 1 << 0, // 1
+    IMMEDIATE_OR_CANCEL = 1 << 1, // 2
+    FILL_OR_KILL = (ALL_OR_NONE | IMMEDIATE_OR_CANCEL), // 3
+    GOOD_TILL_CANCELED = 1 << 2, // 4
+    DEFAULT = DAY
 };
 
 #endif //TYPES_H
