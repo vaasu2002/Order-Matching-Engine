@@ -1,6 +1,6 @@
 //
 // Created by Vaasu Bisht on 20/10/25.
-// Updated by Vaasu Bisht on 11/11/25.
+// Updated by Vaasu Bisht on 13/11/25.
 
 #pragma once
 #ifndef TYPES_H
@@ -19,6 +19,9 @@ using Count = uint64_t;
 using Symbol = std::string;
 using Timestamp = std::chrono::system_clock::time_point;
 
+constexpr uint64_t MAX = std::numeric_limits<int64_t>::max();
+constexpr Price PRICE_MAX = MAX;
+
 enum Side
 {
     BUY,
@@ -34,10 +37,11 @@ enum Type : char{
 
 enum Status
 {
-    PENDING,
-    CANCELLED,
-    FULFILLED,
-    PARTIALLY_FILLED
+    PENDING, // Not yet executed, order stays active on book
+    CANCELLED, // No fills, just cancelled
+    FULFILLED, // Fully executed
+    PARTIALLY_FILLED, // Partial but order stays active on book
+    PARTIAL_FILL_CANCELLED     // Partial fill + remainder cancelled (IOC, MKT)
 };
 
 enum TIF : uint32_t {
