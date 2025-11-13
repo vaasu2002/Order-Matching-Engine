@@ -25,6 +25,7 @@ protected:
         Condition c;
         c.qty = order.openQty();
         c.depthLimit = MAX;
+        return c;
     }
 public:
 
@@ -40,7 +41,7 @@ public:
      * @pre Use this after TIF finalization
      * Based in finalization of order status here it will be done
      */
-    virtual void finalize(Order& order){};
+    virtual void finalize(Order& order) { (void)order; }
 };
 
 /**
