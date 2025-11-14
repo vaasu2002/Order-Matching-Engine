@@ -9,7 +9,7 @@ chmod +x scripts/install-deps.sh
 
 # Build and Run
 cmake -S . -B build
-cmake --build build
+cmake --build build --parallel
 ./build/OrderMatchingEngine 
 ````
 
