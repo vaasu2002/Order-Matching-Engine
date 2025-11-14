@@ -31,7 +31,9 @@ enum Side
 enum Type{
     MARKET,
     LIMIT,
-    DEFAULT = MARKET
+    DEFAULT_TYPE = MARKET,
+    STOP_LIMIT,
+    STOP
 };
 
 enum Status
@@ -49,7 +51,7 @@ enum TIF : uint32_t {
     IMMEDIATE_OR_CANCEL = 1 << 1, // 2
     FILL_OR_KILL = (ALL_OR_NONE | IMMEDIATE_OR_CANCEL), // 3
     GOOD_TILL_CANCELED = 1 << 2, // 4
-    DEFAULT = DAY
+    DEFAULT_TIF = DAY
 };
 
 #endif //TYPES_H

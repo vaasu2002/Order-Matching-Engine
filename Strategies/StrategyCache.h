@@ -61,7 +61,7 @@ struct StrategyCache {
             case Type::LIMIT:  return limit();
             case Type::MARKET: return market();
         }
-        return getTypeStrategy(Type::DEFAULT);
+        return getTypeStrategy(Type::DEFAULT_TYPE);
     }
 
     /**
@@ -77,6 +77,6 @@ struct StrategyCache {
             case TIF::FILL_OR_KILL: return fok();
             case TIF::ALL_OR_NONE: return aon();
         }
-        return getTifStrategy(TIF::DEFAULT);
+        return getTifStrategy(TIF::DEFAULT_TIF);
     }
 };

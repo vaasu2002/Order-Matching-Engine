@@ -45,7 +45,7 @@ public:
                            Symbol symbol,
                            const Price limitPrice,
                            const IValidator& validator,
-                           const TIF tif = TIF::DEFAULT)
+                           const TIF tif = TIF::DEFAULT_TIF)
     {
         return makeAndValidate(id, side, qty, std::move(symbol),
                                Type::LIMIT, limitPrice, Price{0}, tif, validator);
@@ -56,7 +56,7 @@ public:
                             const Quantity qty,
                             Symbol symbol,
                             const IValidator& validator,
-                            const TIF tif = TIF::DEFAULT)
+                            const TIF tif = TIF::DEFAULT_TIF)
     {
         return makeAndValidate(id, side, qty, std::move(symbol),
                                Type::MARKET, Price{0}, Price{0}, tif, validator);
@@ -68,7 +68,7 @@ public:
                           Symbol symbol,
                           const Price stopPrice,
                           const IValidator& validator,
-                          const TIF tif = TIF::DEFAULT)
+                          const TIF tif = TIF::DEFAULT_TIF)
     {
         return makeAndValidate(id, side, qty, std::move(symbol),
                                Type::STOP, Price{0}, stopPrice, tif, validator);
@@ -81,7 +81,7 @@ public:
                                const Price limitPrice,
                                const Price stopPrice,
                                const IValidator& validator,
-                               const TIF tif = TIF::DEFAULT)
+                               const TIF tif = TIF::DEFAULT_TIF)
     {
         return makeAndValidate(id, side, qty, std::move(symbol),
                                Type::STOP_LIMIT, limitPrice, stopPrice, tif, validator);
@@ -92,7 +92,7 @@ public:
                            const Quantity qty,
                            Symbol symbol,
                            const Price limitPrice,
-                           const TIF tif = TIF::DEFAULT
+                           const TIF tif = TIF::DEFAULT_TIF
                         )
     {
         return MakeLimit(id, side, qty, std::move(symbol), limitPrice, DefaultValidator(), tif);
@@ -102,7 +102,7 @@ public:
                             const Side side,
                             const Quantity qty,
                             Symbol symbol,
-                            const TIF tif = TIF::DEFAULT
+                            const TIF tif = TIF::DEFAULT_TIF
                         )
     {
         return MakeMarket(id, side, qty, std::move(symbol), DefaultValidator(), tif);
@@ -113,7 +113,7 @@ public:
                           const Quantity qty,
                           Symbol symbol,
                           const Price stopPrice,
-                          const TIF tif = TIF::DEFAULT
+                          const TIF tif = TIF::DEFAULT_TIF
                         )
     {
         return MakeStop(id, side, qty, std::move(symbol), stopPrice, DefaultValidator(), tif);
@@ -125,7 +125,7 @@ public:
                                Symbol symbol,
                                const Price limitPrice,
                                const Price stopPrice,
-                               const TIF tif = TIF::DEFAULT
+                               const TIF tif = TIF::DEFAULT_TIF
                             )
     {
         return MakeStopLimit(id, side, qty, std::move(symbol), limitPrice, stopPrice, DefaultValidator(), tif);
@@ -221,7 +221,7 @@ private:
     Type mType;
     Price mPrice;     // For LIMIT or STOP_LIMIT
     Price mStopPrice; // For STOP or STOP_LIMIT
-    TIF mTif{TIF::DEFAULT};
+    TIF mTif{TIF::DEFAULT_TIF};
 };
 
 using OrderRawPtr = Order*;
