@@ -47,9 +47,9 @@ struct PriceComparator
 };
 
 struct Condition{
-    int qty; /// > target quantity to matched
-    int priceLimit; /// >
-    int depthLimit; /// > how many price level allowed to walk
+    Quantity qty; /// > target quantity to matched
+    Price priceLimit; /// >
+    uint32_t depthLimit; /// > how many price level allowed to walk
 };
 
 /**
