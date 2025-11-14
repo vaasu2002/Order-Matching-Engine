@@ -28,11 +28,10 @@ enum Side
     SELL
 };
 
-enum Type : char{
+enum Type{
     MARKET,
     LIMIT,
-    STOP,
-    STOP_LIMIT
+    DEFAULT = MARKET
 };
 
 enum Status
