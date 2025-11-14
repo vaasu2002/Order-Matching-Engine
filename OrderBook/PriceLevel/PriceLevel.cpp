@@ -1,5 +1,6 @@
 //
 // Created by Vaasu Bisht on 20/10/25.
+// Updated by Vaasu Bisht on 11/11/25.
 //
 
 #include "PriceLevel.h"
@@ -39,63 +40,63 @@ OrderRawPtr PriceLevel::frontOrder() const
 }
 
 
-PriceLevel::MatchResult PriceLevel::matchOrders(const Quantity maxQty)
+PriceLevel::MatchResult PriceLevel::matchOrders(Quantity& reqQty)
 {
-    // Making fill result object
     MatchResult result; // final result
-    result.remaining = maxQty;
-    result.trades.reserve(mOrders.size()); // heuristic
 
-    // Shares quantity we need to fill (pending)
-    Quantity reqQty = maxQty;
+    result.trades.reserve(mOrders.size()); // heuristic: avoid frequent reallocations
 
-    auto currRestingOrderIt = mOrders.begin();
-    OrderRawPtr currRestingOrder = nullptr;
+    // Begin matching according to price–time priority (FIFO)
+    // Start from the earliest resting order at this price level.
+    auto restingIt  = mOrders.begin(); // Iterator to  resting order
 
-    while (currRestingOrderIt != mOrders.end() && reqQty > 0) {
+    // Continue matching until either the requested quantity is fully filled
+    // or there are no more resting orders available at this price level.
+    while (restingIt != mOrders.end() && reqQty > 0) {
 
-        currRestingOrder = currRestingOrderIt->get();
+        // Pointer to the current resting order (oldest at this level).
+        OrderRawPtr restingOrder = restingIt->get(); 
 
+        Quantity unitsAvailable = restingOrder->openQty();
 
-        // Shares quantity we have for current order
-        Quantity availableQty = currRestingOrder->openQty();
+        // Case 1: unitsAvailable(150) > reqQty(100);(order on other side is fulfilled)
+        // Case 2: unitsAvailable(10) < reqQty(60);  (resting order will be removed)
+        // Case 3: unitsAvailable(10) = reqQty(60);  (both order are fulfilled)
+        const Quantity fillAmt = std::min(unitsAvailable, reqQty); // Units we will take from this resting order
 
-        // Shares quantity we can fill on both sides (resting order and inBoundOrder)
-        // Case 1: availableQty(150) > reqQty(100);(order on other side is fulfilled)
-        // Case 2: availableQty(10) < reqQty(60);  (resting order will be removed)
-        // Case 3: availableQty(10) = reqQty(60);  (both order are fulfilled)
-        const Quantity fillAmt = std::min(availableQty, reqQty);
-
+        // update external and level quantities
         reqQty -= fillAmt;
         mTotalQuantity -= fillAmt;
 
-        // Prepare trade record (timestamp now)
+        // record trade
         MatchedTrade mt;
-        mt.restingOrderId = currRestingOrder->id();
+        mt.restingOrderId = restingOrder->id();
         mt.qty = fillAmt;
-        mt.price = mPrice; // PriceLevel price member
+        mt.price = mPrice; // Price of this level
 
         result.trades.push_back(std::move(mt));
 
-        if (availableQty == fillAmt) {
-            // Resting order fully filled
-            currRestingOrder->updateOpenQty(0);
-            currRestingOrder->updateStatus(Status::FULFILLED);
+        if (unitsAvailable == fillAmt) {
+            // resting order fully filled -> remove from level
+            restingOrder->updateOpenQty(0);
+            restingOrder->updateStatus(Status::FULFILLED);
 
-            // Removing the order from PriceLevel and going to next resting order
-            currRestingOrderIt = mOrders.erase(currRestingOrderIt);
+            // Removing the order from this level
+            restingIt = mOrders.erase(restingIt); // Returns next iterator
             mOrderCount--; //  Desc order count
         }
         else {
-            // Current resting order is partially filled
-            Quantity newOpen = availableQty - fillAmt;
-            currRestingOrder->updateOpenQty(newOpen);
-            currRestingOrder->updateStatus(Status::PARTIALLY_FILLED);
-            currRestingOrderIt++;
+            // Partially filled
+            Quantity newOpen = unitsAvailable - fillAmt;
+            // Update remaining open qty and keep it in level
+            restingOrder->updateOpenQty(newOpen);
+            restingOrder->updateStatus(Status::PARTIALLY_FILLED);
+
+            // incoming order must be fully filled when resting is partially filled,
+            // so break out early to avoid unnecessary iterator advancement.
+            break;
         }
     }
-
-    result.remaining = reqQty;
 
     return result;
 }

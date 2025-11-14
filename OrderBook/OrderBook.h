@@ -1,6 +1,8 @@
 //
 // Created by Vaasu Bisht on 21/10/25.
+// Updated by Vaasu Bisht on 14/11/25.
 //
+
 #pragma once
 #ifndef ORDERBOOK_H
 #define ORDERBOOK_H
@@ -12,6 +14,7 @@
 #include <mutex>
 #include <iostream>
 #include "OrderTracker/OrderTracker.h"
+#include "../Pipeline/PipelineFactory.h"
 
 
 /**
@@ -22,7 +25,6 @@
  * that only one thread interacts with its data structures at any given time.
  *
  * @details
- *
  * This thread confinement model eliminates the need for internal locking within
  * the OrderBook, greatly simplifying concurrency management and improving performance.
  * The scheduler ensures that all operations related to a specific symbol are always
@@ -101,9 +103,9 @@ class OrderBook {
 
     /**
      * @struct Registry
-     * @brief Multiton registry: multiton mapping from Symbol -> weak_ptr<OrderBook>.
-     * The Registry is thread-safe; it holds weak_ptr to avoid cycles and to
-     * allow lazy creation.
+     * @brief Multiton registry: multiton mapping from Symbol -> shared_ptr<OrderBook>.
+     * The Registry is thread-safe. It holds shared_ptr and allows lazy creation.
+     * todo: check about weak_ptr to avoid reference cycles
      */
     struct Registry
     {
@@ -137,14 +139,19 @@ class OrderBook {
         void cleanupRegistry();
         size_t size() const;
     };
+    
+    // BUY/SELL-specific order tracker
     using Tracker = OrderTracker;
+
+    // Map side → corresponding tracker (avoids if-else branching)
     using TrackerStore = std::map<Side,Tracker>;
 
-    Symbol mSymbol;
-    // Tracker mBidTracker; ///> Tracking storing BUY side order.
-    // Tracker mAskTracker; ///>  Tracking storing SELL side order.
-    TrackerStore mTrackerStore; ///> Stores order tracker for different side (BUY and SELL)
-    Stats mStats;
+    Symbol mSymbol; ///< Ticker symbol this order book is associated with
+    TrackerStore mTrackerStore; ///< Stores OrderTracker instances for each side (BUY and SELL)
+    Stats mStats; ///< Aggregated statistics for the order book
+
+
+    Pipeline mOrderPipeline; ///< Executes all sequential processing stages for each incoming order.
 
     static Registry& registry()
     {
@@ -161,11 +168,14 @@ class OrderBook {
      * @brief Attempts to match an incoming order with orders from the opposite side.
      * @param order Incoming order being matched.
      */
-    void matchOrder(OrderRawPtr order);
+    void matchOrder(Order& order);
 
     /**
      * @brief Persists the order in the order book. The order is stored in the appropriate
-     * price level tracker depending on its side.
+     * price level tracker depending on its side. 
+     * 
+     * @pre The order must be a LIMIT order, unfulfilled, and have a valid TIF.
+     * 
      * @param order The order to be stored.
      */
     void addRestingOrder(OrderPtr order);
@@ -179,6 +189,7 @@ class OrderBook {
      * quantity to the order book as a new resting order.
      *
      * @pre It must be called after the matching has been attempted.
+     * 
      * @todo Implement client notifications for fills or status changes.
      */
     static void updateOrder(Order& order,Quantity remainingQty);
@@ -218,8 +229,10 @@ public:
      * 1. Try to match the order against the best-priced orders on the opposite side.
      * 2. If the order is partially filled, handle remaining quantity based on order type.
      * 3. If unfulfilled (e.g., limit order not fully filled), persist it as a resting order.
-     * @remarks The caller must be the worker owning this OrderBook.
-     * @param order Incoming order which is looking to be matched.
+     * 
+     * @remarks Must be invoked by the worker thread that owns this OrderBook instance.
+     * 
+     * @param order The incoming order to be matched.
      */
     void processOrder(OrderPtr order);
 };

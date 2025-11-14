@@ -24,3 +24,4 @@
 | Guaranteed execution | No                                         | Yes                                        |
 | Stored in book       | Yes, if not filled                         | No                                         |
 | Common use           | Placing bids/offers and providing liquidity| Taking liquidity, fast entry/exit          |
+
